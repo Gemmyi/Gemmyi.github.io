@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markforged Desktop 系列：專業列印操作指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Neutrals with Amber and Teal Accents -->
+    <!-- Application Structure Plan: Dashboard layout with sidebar navigation. Categorizes operational steps into Preparation, Printing/Calibration, Post-Processing, and Maintenance. Includes interactive checklists and machine-specific content toggling to improve usability and reduce cognitive load during operation. -->
+    <!-- Visualization & Content Choices: 1. Maintenance Schedule -> Bar Chart (Chart.js) -> Hover tooltips -> Quick visual comparison of maintenance frequencies. 2. Pre-print Checklist -> Interactive HTML Checklist -> Click to check -> Ensures operator engagement. 3. Machine Selector -> Dropdown/Buttons -> Shows/hides Fiber section -> Contextual relevance. Confirming NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .hidden-section {
+            display: none;
+        }
+        .nav-active {
+            background-color: #d6d3d1;
+            font-weight: bold;
+            border-left: 4px solid #d97706;
+        }
+        .machine-active {
+            background-color: #0f766e;
+            color: white;
+            border-color: #0f766e;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased min-h-screen flex flex-col md:flex-row">
+
+    <nav class="w-full md:w-64 bg-stone-200 flex flex-col shadow-lg z-10 md:min-h-screen">
+        <div class="p-6 bg-stone-800 text-stone-50">
+            <h1 class="text-xl font-bold tracking-wider">MARKFORGED</h1>
+            <p class="text-sm text-stone-400 mt-1">Desktop Series Guide</p>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4">
+            <button onclick="navigate('overview')" id="nav-overview" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition nav-active">🏠 系統總覽</button>
+            <button onclick="navigate('preparation')" id="nav-preparation" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition">📦 材料與準備</button>
+            <button onclick="navigate('calibration')" id="nav-calibration" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition">⚙️ 校準與列印</button>
+            <button onclick="navigate('fiber')" id="nav-fiber" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition">🧵 纖維強化</button>
+            <button onclick="navigate('postprocess')" id="nav-postprocess" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition">🛠️ 後處理</button>
+            <button onclick="navigate('maintenance')" id="nav-maintenance" class="w-full text-left px-6 py-3 hover:bg-stone-300 transition">📊 維護計畫</button>
+        </div>
+    </nav>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        
+        <header class="mb-8 pb-4 border-b border-stone-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-stone-900" id="section-title">系統總覽</h2>
+            </div>
+            <div class="bg-white p-2 rounded-lg shadow-sm border border-stone-200 flex items-center gap-2">
+                <span class="text-sm font-semibold text-stone-500 px-2">當前設備型號：</span>
+                <button onclick="selectMachine('Onyx One')" id="btn-onyx-one" class="px-3 py-1 text-sm border border-stone-300 rounded hover:bg-stone-100 transition">Onyx One</button>
+                <button onclick="selectMachine('Onyx Pro')" id="btn-onyx-pro" class="px-3 py-1 text-sm border border-stone-300 rounded hover:bg-stone-100 transition machine-active">Onyx Pro</button>
+                <button onclick="selectMachine('Mark Two')" id="btn-mark-two" class="px-3 py-1 text-sm border border-stone-300 rounded hover:bg-stone-100 transition">Mark Two</button>
+            </div>
+        </header>
+
+        <div id="sec-overview" class="space-y-6">
+            <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                歡迎使用 Markforged Desktop 系列專業操作指南。本指南旨在提供標準化的操作流程，幫助您確保列印品質與設備穩定性。請透過左側選單瀏覽各個操作階段，並可於右上方選擇您正在使用的設備型號，系統將自動為您過濾適用的技術內容。
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-xl shadow-sm cursor-pointer hover:shadow-md transition" onclick="navigate('preparation')">
+                    <div class="text-2xl mb-2">📦</div>
+                    <h3 class="text-lg font-bold text-stone-800">1. 列印前準備</h3>
+                    <p class="text-sm text-stone-600 mt-2">包含 Drybox 管理與塑料加載，確保材料狀態最佳。</p>
+                </div>
+                <div class="bg-teal-50 border-l-4 border-teal-600 p-6 rounded-r-xl shadow-sm cursor-pointer hover:shadow-md transition" onclick="navigate('calibration')">
+                    <div class="text-2xl mb-2">⚙️</div>
+                    <h3 class="text-lg font-bold text-stone-800">2. 床台調校與列印</h3>
+                    <p class="text-sm text-stone-600 mt-2">水平校準、Z軸偏移與列印前預檢清單。</p>
+                </div>
+                <div class="bg-stone-100 border-l-4 border-stone-500 p-6 rounded-r-xl shadow-sm cursor-pointer hover:shadow-md transition" onclick="navigate('maintenance')">
+                    <div class="text-2xl mb-2">📊</div>
+                    <h3 class="text-lg font-bold text-stone-800">3. 設備維護</h3>
+                    <p class="text-sm text-stone-600 mt-2">掌握保養週期，查看定期維護建議資料。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-preparation" class="hidden-section space-y-6">
+            <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                本章節涵蓋列印啟動前的關鍵材料管理步驟。在啟動列印作業前，正確的材料安裝與防潮存放是確保列印成功、防止噴嘴堵塞的絕對關鍵。
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center">💧 材料存放 (Drybox 管理)</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-red-50 rounded-lg border border-red-100">
+                            <span class="font-bold text-red-700">⚠️ 防潮要求：</span>
+                            <p class="text-stone-700 mt-1">尼龍基材料（如 Onyx）極易吸收濕氣。必須將材料存放於隨機附贈的 Drybox 中。</p>
+                        </div>
+                        <ul class="list-disc list-inside text-stone-700 space-y-2 pl-4">
+                            <li>確保 Drybox 蓋子完全密封，扣環緊閉。</li>
+                            <li>檢查乾燥劑指示卡：若顏色由 <span class="text-blue-600 font-bold">藍色</span> 轉為 <span class="text-pink-500 font-bold">粉紅色</span>，請立即更換乾燥劑。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center">🔄 加載塑料材料 (Plastic Loading)</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">進入選單</h4>
+                                <p class="text-sm text-stone-600">在觸控螢幕上選擇 <code>Materials</code> → <code>Load Plastic</code>。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">切換噴嘴溫度</h4>
+                                <p class="text-sm text-stone-600">設備將自動加熱列印頭至操作溫度，請耐心等候。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold">3</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">導管連接</h4>
+                                <p class="text-sm text-stone-600">將材料穿過 Drybox 轉接頭與導管，平順地推入擠出機。</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0 w-8 h-8 bg-teal-600 text-white rounded-full flex items-center justify-center font-bold">4</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">確認出料</h4>
+                                <p class="text-sm text-stone-600">觀察噴嘴是否有均勻、無氣泡的材料流出。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-calibration" class="hidden-section space-y-6">
+            <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                本區域提供列印床台的校準指南與列印啟動前的互動式預檢清單。水平的列印床台是首層附著力與尺寸精度的基礎，請確保每次更換耗材或保養後確實執行。
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">🎛️ 床台調校與校準</h3>
+                        
+                        <div class="mb-6">
+                            <h4 class="font-bold text-amber-600 border-b border-stone-100 pb-2 mb-2">物理水平調校 (Bed Leveling)</h4>
+                            <p class="text-sm text-stone-500 mb-3">工具準備：使用 Markforged 提供的金屬間隙片（Shim）。</p>
+                            <ol class="list-decimal list-inside text-stone-700 space-y-2 text-sm bg-stone-50 p-4 rounded">
+                                <li>選擇 <code>Settings</code> → <code>Bed Leveling</code>。</li>
+                                <li>依照螢幕指示，移動列印頭至三個校準點。</li>
+                                <li>調整床台下方的旋鈕，使間隙片在噴嘴與床台間感受到「輕微阻力」但不卡死。</li>
+                            </ol>
+                        </div>
+
+                        <div>
+                            <h4 class="font-bold text-amber-600 border-b border-stone-100 pb-2 mb-2">Z 軸偏移校準 (Z-Offset)</h4>
+                            <p class="text-sm text-stone-700">當更換噴嘴或床台後，必須執行此校準以重新定義 Z 軸零點位置。</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">🧴 塗佈膠水 (Bed Adhesive)</h3>
+                        <p class="text-stone-700 mb-2"><strong>目的：</strong>增加零件附著力並作為列印完成後的脫模層。</p>
+                        <ul class="list-disc list-inside text-stone-700 space-y-2 text-sm">
+                            <li>在列印區域均勻塗抹一層薄薄的「水性膠棒」。</li>
+                            <li><span class="text-red-600 font-bold">注意：</span>避免重複塗抹過厚，以免影響首層精度。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">✅ 列印作業啟動與預檢</h3>
+                    <p class="text-stone-600 text-sm mb-6">在 Eiger 軟體將 <code>.mfp</code> 檔案傳送至印表機後，請完成以下確認：</p>
+                    
+                    <div class="flex-1 bg-stone-50 p-6 rounded-lg border border-stone-200">
+                        <h4 class="font-bold text-stone-800 mb-4">列印前預檢清單</h4>
+                        
+                        <div class="w-full bg-stone-200 rounded-full h-2.5 mb-6">
+                            <div id="checklist-progress" class="bg-teal-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-white rounded border border-transparent hover:border-stone-200 transition">
+                                <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-teal-600 rounded" onclick="updateChecklist()">
+                                <span class="text-stone-700 font-medium">床台已完成物理水平校準</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-white rounded border border-transparent hover:border-stone-200 transition">
+                                <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-teal-600 rounded" onclick="updateChecklist()">
+                                <span class="text-stone-700 font-medium">水性膠水已均勻塗抹於列印區</span>
+                            </label>
+                            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-white rounded border border-transparent hover:border-stone-200 transition">
+                                <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-teal-600 rounded" onclick="updateChecklist()">
+                                <span class="text-stone-700 font-medium">Onyx 材料（與纖維）餘量充足</span>
+                            </label>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <p id="btn-print" disabled class="bg-stone-300 text-stone-500 font-bold py-3 px-8 rounded-lg cursor-not-allowed transition w-full">
+                                完成預檢，點擊 Print 啟動
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-fiber" class="hidden-section space-y-6">
+            <div id="fiber-warning" class="bg-red-50 p-6 rounded-xl border border-red-200 text-center">
+                <div class="text-4xl mb-2">🚫</div>
+                <h3 class="text-xl font-bold text-red-800">型號不支援</h3>
+                <p class="text-red-600 mt-2">您當前選擇的機型 (Onyx One) 不支援連續纖維強化功能。請切換至 Onyx Pro 或 Mark Two 以查看此內容。</p>
+            </div>
+
+            <div id="fiber-content" class="space-y-6 hidden-section">
+                <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                    本章節專門說明連續纖維（連續碳纖維、玻璃纖維、Kevlar）的配置與維護。正確的纖維路徑與噴嘴保養能大幅提升強化零件的良率。
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-stone-800 text-white p-6 rounded-xl shadow-md">
+                        <h3 class="text-xl font-bold mb-4 text-amber-400">🧵 纖維加載流程</h3>
+                        <p class="mb-4 text-stone-300">纖維材料較為脆弱，安裝時需特別注意物理應力。</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-400">►</span>
+                                <span><strong>避免彎折：</strong> 加載過程中嚴禁過度彎折纖維線材，以免造成內部斷裂。</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-amber-400">►</span>
+                                <span><strong>路徑檢查：</strong> 確保纖維精準通過專用的纖維擠出機齒輪，並正確順暢地進入鐵氟龍導管。</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">🔧 纖維噴嘴維護</h3>
+                        <p class="text-stone-600 mb-4">纖維噴嘴屬於消耗品，其內部切刀與孔徑會隨時間磨損。</p>
+                        
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded">
+                            <h4 class="font-bold text-amber-800">常見問題與排除</h4>
+                            <p class="text-sm text-stone-700 mt-2">
+                                若發現強化纖維無法順利切斷、尾端毛躁，或擠出不順暢時：
+                                <br><br>
+                                1. 停止列印並卸載纖維。<br>
+                                2. 檢查噴嘴內部與切刀處是否有殘留碎屑。<br>
+                                3. 必要時執行噴嘴清理或更換全新纖維噴嘴。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-postprocess" class="hidden-section space-y-6">
+            <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                本章節指導您如何在列印完成後安全地取下零件，並進行基本的支撐材拆除作業，確保成品的表面品質不受損。
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <div class="text-center mb-6">
+                        <div class="text-5xl mb-2">🧊</div>
+                        <h3 class="text-2xl font-bold text-stone-800">零件拆卸</h3>
+                    </div>
+                    <ul class="space-y-4">
+                        <li class="bg-stone-50 p-4 rounded border border-stone-100">
+                            <h4 class="font-bold text-teal-700">冷卻建議</h4>
+                            <p class="text-stone-600 text-sm mt-1">列印完成後，切勿立即強行取件。請等待床台自然冷卻至室溫，熱脹冷縮效應會使零件更容易脫離。</p>
+                        </li>
+                        <li class="bg-stone-50 p-4 rounded border border-stone-100">
+                            <h4 class="font-bold text-teal-700">取件工具</h4>
+                            <p class="text-stone-600 text-sm mt-1">使用隨附的平鏟，小心地從零件底部邊緣輕輕撬起。請保持平鏟與床台平行，避免刮傷或損壞床台表面。</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <div class="text-center mb-6">
+                        <div class="text-5xl mb-2">✂️</div>
+                        <h3 class="text-2xl font-bold text-stone-800">支撐移除</h3>
+                    </div>
+                    <div class="prose text-stone-600">
+                        <p>Markforged 的 Eiger 軟體所生成的支撐結構，特別針對 Onyx 材料設計為易於剝離的鋸齒狀結構。</p>
+                        <h4 class="font-bold text-stone-800 mt-4 mb-2">操作指引：</h4>
+                        <ol class="list-decimal pl-5 space-y-2">
+                            <li>準備工具：斜口鉗或尖嘴鉗。</li>
+                            <li>尋找支撐結構的接縫處或邊緣。</li>
+                            <li>使用鉗子夾住支撐，穩定且緩慢地將其撕離主體。</li>
+                            <li><strong>對於精細部位：</strong> 請務必放慢速度，分小塊剝離，切勿用力過猛以免折斷零件主體的細節特徵。</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-maintenance" class="hidden-section space-y-6">
+            <p class="text-lg leading-relaxed text-stone-600 bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                本章節視覺化呈現設備的定期維護頻率。定期的清潔與潤滑能大幅延長設備壽命並保持穩定的列印精度。下方圖表顯示相對的維護頻率，表格則提供具體操作細節。
+            </p>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-xl font-bold text-stone-800 mb-6 text-center">定期維護相對頻率概覽</h3>
+                
+                <div class="chart-container">
+                    <canvas id="maintenanceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-stone-800 text-stone-100">
+                            <th class="py-4 px-6 font-semibold">維護項目</th>
+                            <th class="py-4 px-6 font-semibold">頻率</th>
+                            <th class="py-4 px-6 font-semibold">操作說明</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-stone-200 text-stone-700">
+                        <tr class="hover:bg-stone-50 transition">
+                            <td class="py-4 px-6 font-bold flex items-center gap-2"><span>✨</span> 清理床台</td>
+                            <td class="py-4 px-6"><span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-bold">每次列印後</span></td>
+                            <td class="py-4 px-6">使用溫水清洗殘留的水性膠水，並用無塵布徹底擦乾。</td>
+                        </tr>
+                        <tr class="hover:bg-stone-50 transition">
+                            <td class="py-4 px-6 font-bold flex items-center gap-2"><span>🛢️</span> 導軌潤滑</td>
+                            <td class="py-4 px-6"><span class="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded font-bold">每 50 小時</span></td>
+                            <td class="py-4 px-6">使用隨附的專用潤滑油，均勻塗抹於 X 軸與 Y 軸導軌表面。</td>
+                        </tr>
+                        <tr class="hover:bg-stone-50 transition">
+                            <td class="py-4 px-6 font-bold flex items-center gap-2"><span>🔥</span> 噴嘴更換</td>
+                            <td class="py-4 px-6"><span class="bg-stone-200 text-stone-800 text-xs px-2 py-1 rounded font-bold">視磨損情況</span></td>
+                            <td class="py-4 px-6">若列印表面出現嚴重拉絲、擠出不足，或尺寸誤差變大時，建議更換新噴嘴。</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-amber-50 p-6 rounded-xl border border-amber-200 flex items-start gap-4">
+                <div class="text-2xl">⚠️</div>
+                <div>
+                    <h4 class="font-bold text-amber-900">故障排除注意事項</h4>
+                    <p class="text-amber-800 mt-1 text-sm">若在列印過程中觸控螢幕顯示 <code>Motor Jam</code> (馬達卡料) 或 <code>Out of Material</code> (材料耗盡) 報錯，請勿強行拔扯材料。請先參考 Eiger 線上支援文檔中的標準退料程序，或聯繫您的技術代理商尋求協助。</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentMachine = 'Onyx Pro'; 
+        let maintenanceChartInstance = null;
+
+        function navigate(sectionId) {
+            const sections = ['overview', 'preparation', 'calibration', 'fiber', 'postprocess', 'maintenance'];
+            
+            sections.forEach(id => {
+                document.getElementById('sec-' + id).classList.add('hidden-section');
+                document.getElementById('nav-' + id).classList.remove('nav-active');
+            });
+
+            document.getElementById('sec-' + sectionId).classList.remove('hidden-section');
+            document.getElementById('nav-' + sectionId).classList.add('nav-active');
+
+            const titles = {
+                'overview': '系統總覽',
+                'preparation': '列印準備與材料管理',
+                'calibration': '床台調校與列印作業',
+                'fiber': '纖維強化配置',
+                'postprocess': '列印後處理與零件取出',
+                'maintenance': '定期維護建議'
+            };
+            document.getElementById('section-title').textContent = titles[sectionId];
+
+            if (sectionId === 'fiber') {
+                updateFiberSection();
+            }
+
+            if (sectionId === 'maintenance' && !maintenanceChartInstance) {
+                initChart();
+            }
+        }
+
+        function selectMachine(machine) {
+            currentMachine = machine;
+            
+            const buttons = ['btn-onyx-one', 'btn-onyx-pro', 'btn-mark-two'];
+            buttons.forEach(id => {
+                document.getElementById(id).classList.remove('machine-active');
+            });
+
+            if (machine === 'Onyx One') document.getElementById('btn-onyx-one').classList.add('machine-active');
+            if (machine === 'Onyx Pro') document.getElementById('btn-onyx-pro').classList.add('machine-active');
+            if (machine === 'Mark Two') document.getElementById('btn-mark-two').classList.add('machine-active');
+
+            updateFiberSection();
+        }
+
+        function updateFiberSection() {
+            const warning = document.getElementById('fiber-warning');
+            const content = document.getElementById('fiber-content');
+            
+            if (currentMachine === 'Onyx One') {
+                warning.classList.remove('hidden-section');
+                content.classList.add('hidden-section');
+            } else {
+                warning.classList.add('hidden-section');
+                content.classList.remove('hidden-section');
+            }
+        }
+
+        function updateChecklist() {
+            const checkboxes = document.querySelectorAll('.checklist-item');
+            let checkedCount = 0;
+            
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+            });
+
+            const percentage = (checkedCount / checkboxes.length) * 100;
+            document.getElementById('checklist-progress').style.width = percentage + '%';
+
+            const printBtn = document.getElementById('btn-print');
+            if (checkedCount === checkboxes.length) {
+                printBtn.disabled = false;
+                printBtn.classList.remove('bg-stone-300', 'text-stone-500', 'cursor-not-allowed');
+                printBtn.classList.add('bg-teal-600', 'text-white', 'hover:bg-teal-700', 'shadow-md');
+                printBtn.textContent = '▶ 啟動列印 (Print)';
+            } else {
+                printBtn.disabled = true;
+                printBtn.classList.add('bg-stone-300', 'text-stone-500', 'cursor-not-allowed');
+                printBtn.classList.remove('bg-teal-600', 'text-white', 'hover:bg-teal-700', 'shadow-md');
+                printBtn.textContent = '完成預檢，點擊 Print 啟動';
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('maintenanceChart').getContext('2d');
+            
+            maintenanceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['清理床台 (每次)', '導軌潤滑 (50小時)', '噴嘴更換 (視磨損)'],
+                    datasets: [{
+                        label: '相對執行頻率指數',
+                        data: [100, 20, 5], 
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',  
+                            'rgba(245, 158, 11, 0.7)', 
+                            'rgba(120, 113, 108, 0.7)' 
+                        ],
+                        borderColor: [
+                            'rgb(220, 38, 38)',
+                            'rgb(217, 119, 6)',
+                            'rgb(87, 83, 78)'
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    indexAxis: 'y', 
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const notes = [
+                                        '執行時機：每次列印完畢後立即執行',
+                                        '執行時機：累計列印達 50 小時',
+                                        '執行時機：出現拉絲或擠出異常時'
+                                    ];
+                                    return notes[context.dataIndex];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            display: false, 
+                            max: 110
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 14,
+                                    family: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                                },
+                                color: '#44403c'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
